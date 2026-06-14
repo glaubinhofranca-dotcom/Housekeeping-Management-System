@@ -12,7 +12,7 @@ export type RoomType = 'standard' | 'deluxe' | 'suite' | 'presidential'
 
 export type UserRole = 'supervisor' | 'housekeeper'
 
-export type Language = 'en' | 'pt'
+export type Language = 'en' | 'pt' | 'es'
 
 export interface Room {
   id: string
@@ -58,6 +58,7 @@ export interface FloorConfig {
 export interface StatusConfig {
   label: string
   labelPt: string
+  labelEs: string
   bg: string
   text: string
   border: string

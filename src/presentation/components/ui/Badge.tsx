@@ -1,4 +1,4 @@
-import { STATUS_CONFIG, ROOM_TYPE_CONFIG } from '@/domain/constants'
+import { STATUS_CONFIG, ROOM_TYPE_CONFIG, localizeStatus, localizeType } from '@/domain/constants'
 import type { RoomStatus, RoomType } from '@/domain/types'
 import { useTranslation } from '@/application/i18n/LanguageContext'
 
@@ -10,7 +10,7 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
   const { language } = useTranslation()
   const cfg = STATUS_CONFIG[status]
-  const label = language === 'pt' ? cfg.labelPt : cfg.label
+  const label = localizeStatus(cfg, language)
   const px = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs font-medium'
 
   return (
@@ -28,7 +28,7 @@ interface TypeBadgeProps {
 export function TypeBadge({ type }: TypeBadgeProps) {
   const { language } = useTranslation()
   const cfg = ROOM_TYPE_CONFIG[type]
-  const label = language === 'pt' ? cfg.labelPt : cfg.label
+  const label = localizeType(cfg, language)
 
   const colors: Record<RoomType, string> = {
     standard: 'bg-slate-100 text-slate-600 border-slate-200',

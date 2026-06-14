@@ -1,9 +1,10 @@
-import type { RoomStatus, RoomType, Staff, Room, StatusConfig } from './types'
+import type { RoomStatus, RoomType, Staff, Room, StatusConfig, Language } from './types'
 
 export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   vacant_dirty: {
     label: 'Vacant Dirty',
     labelPt: 'Vago Sujo',
+    labelEs: 'Vacante Sucio',
     bg: 'bg-amber-100',
     text: 'text-amber-800',
     border: 'border-amber-300',
@@ -12,6 +13,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   checkout: {
     label: 'Checkout',
     labelPt: 'Checkout',
+    labelEs: 'Checkout',
     bg: 'bg-red-100',
     text: 'text-red-800',
     border: 'border-red-300',
@@ -20,6 +22,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   checkin_pending: {
     label: 'Check-in Pending',
     labelPt: 'Check-in Pendente',
+    labelEs: 'Check-in Pendiente',
     bg: 'bg-violet-100',
     text: 'text-violet-800',
     border: 'border-violet-300',
@@ -28,6 +31,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   occupied_dirty: {
     label: 'Occupied Dirty',
     labelPt: 'Ocupado Sujo',
+    labelEs: 'Ocupado Sucio',
     bg: 'bg-orange-100',
     text: 'text-orange-800',
     border: 'border-orange-300',
@@ -36,6 +40,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   clean: {
     label: 'Clean',
     labelPt: 'Limpo',
+    labelEs: 'Limpio',
     bg: 'bg-green-100',
     text: 'text-green-800',
     border: 'border-green-300',
@@ -44,6 +49,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   inspected: {
     label: 'Inspected',
     labelPt: 'Inspecionado',
+    labelEs: 'Inspeccionado',
     bg: 'bg-teal-100',
     text: 'text-teal-800',
     border: 'border-teal-300',
@@ -52,6 +58,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   dnd: {
     label: 'Do Not Disturb',
     labelPt: 'Não Perturbe',
+    labelEs: 'No Molestar',
     bg: 'bg-gray-100',
     text: 'text-gray-600',
     border: 'border-gray-300',
@@ -60,6 +67,7 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   out_of_order: {
     label: 'Out of Order',
     labelPt: 'Fora de Serviço',
+    labelEs: 'Fuera de Servicio',
     bg: 'bg-red-950',
     text: 'text-red-100',
     border: 'border-red-800',
@@ -67,11 +75,29 @@ export const STATUS_CONFIG: Record<RoomStatus, StatusConfig> = {
   },
 }
 
-export const ROOM_TYPE_CONFIG: Record<RoomType, { label: string; labelPt: string; beds: number }> = {
-  standard: { label: 'Standard', labelPt: 'Standard', beds: 1 },
-  deluxe: { label: 'Deluxe', labelPt: 'Deluxe', beds: 2 },
-  suite: { label: 'Suite', labelPt: 'Suíte', beds: 2 },
-  presidential: { label: 'Presidential', labelPt: 'Presidencial', beds: 3 },
+export const ROOM_TYPE_CONFIG: Record<
+  RoomType,
+  { label: string; labelPt: string; labelEs: string; beds: number }
+> = {
+  standard:     { label: 'Standard',     labelPt: 'Standard',     labelEs: 'Estándar',     beds: 1 },
+  deluxe:       { label: 'Deluxe',       labelPt: 'Deluxe',       labelEs: 'Deluxe',       beds: 2 },
+  suite:        { label: 'Suite',        labelPt: 'Suíte',        labelEs: 'Suite',        beds: 2 },
+  presidential: { label: 'Presidential', labelPt: 'Presidencial', labelEs: 'Presidencial', beds: 3 },
+}
+
+export function localizeStatus(cfg: StatusConfig, lang: Language): string {
+  if (lang === 'pt') return cfg.labelPt
+  if (lang === 'es') return cfg.labelEs
+  return cfg.label
+}
+
+export function localizeType(
+  cfg: { label: string; labelPt: string; labelEs: string },
+  lang: Language,
+): string {
+  if (lang === 'pt') return cfg.labelPt
+  if (lang === 'es') return cfg.labelEs
+  return cfg.label
 }
 
 export const DEFAULT_STAFF: Staff[] = [

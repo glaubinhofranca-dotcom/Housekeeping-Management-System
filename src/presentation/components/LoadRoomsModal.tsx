@@ -4,7 +4,7 @@ import { Modal } from './ui/Modal'
 import { Button } from './ui/Button'
 import { useRoomStore } from '@/application/store/useRoomStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import { STATUS_CONFIG, ROOM_TYPE_CONFIG } from '@/domain/constants'
+import { STATUS_CONFIG, ROOM_TYPE_CONFIG, localizeStatus, localizeType } from '@/domain/constants'
 import type { FloorConfig, RoomStatus, RoomType } from '@/domain/types'
 
 interface LoadRoomsModalProps {
@@ -171,7 +171,7 @@ export function LoadRoomsModal({ open, onClose }: LoadRoomsModalProps) {
                   >
                     {ALL_TYPES.map((tp) => (
                       <option key={tp} value={tp}>
-                        {language === 'pt' ? ROOM_TYPE_CONFIG[tp].labelPt : ROOM_TYPE_CONFIG[tp].label}
+                        {localizeType(ROOM_TYPE_CONFIG[tp], language)}
                       </option>
                     ))}
                   </select>
@@ -184,7 +184,7 @@ export function LoadRoomsModal({ open, onClose }: LoadRoomsModalProps) {
                 <div className="flex gap-2 flex-wrap">
                   {DIRTY_STATUSES.map((s) => {
                     const cfg = STATUS_CONFIG[s]
-                    const label = language === 'pt' ? cfg.labelPt : cfg.label
+                    const label = localizeStatus(cfg, language)
                     return (
                       <button
                         key={s}

@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import { UserCog, Sparkles, Globe, ChevronLeft } from 'lucide-react'
+import { UserCog, Sparkles, ChevronLeft } from 'lucide-react'
 import { useAppStore } from '@/application/store/useAppStore'
 import { useRoomStore } from '@/application/store/useRoomStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import type { Staff, UserRole } from '@/domain/types'
+import type { Staff, UserRole, Language } from '@/domain/types'
+
+const LANGUAGES: { code: Language; native: string }[] = [
+  { code: 'en', native: 'EN' },
+  { code: 'pt', native: 'PT' },
+  { code: 'es', native: 'ES' },
+]
 
 type Step = 'role' | 'person'
 
@@ -26,15 +32,23 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1e3a5f] via-[#1e3a5f] to-[#16304f] flex flex-col">
-      {/* Language toggle */}
+      {/* Language picker */}
       <div className="flex justify-end p-4">
-        <button
-          onClick={() => setLanguage(language === 'en' ? 'pt' : 'en')}
-          className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
-        >
-          <Globe size={14} />
-          {language === 'en' ? 'PT' : 'EN'}
-        </button>
+        <div className="flex items-center gap-0.5 bg-white/10 rounded-lg p-0.5">
+          {LANGUAGES.map(({ code, native }) => (
+            <button
+              key={code}
+              onClick={() => setLanguage(code)}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all uppercase tracking-wide
+                ${language === code
+                  ? 'bg-white text-[#1e3a5f] shadow-sm'
+                  : 'text-white/60 hover:text-white'
+                }`}
+            >
+              {native}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main content */}

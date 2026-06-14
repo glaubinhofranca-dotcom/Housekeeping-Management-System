@@ -1,7 +1,7 @@
 import { Search, X } from 'lucide-react'
 import { useRoomStore } from '@/application/store/useRoomStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import { STATUS_CONFIG, ROOM_TYPE_CONFIG } from '@/domain/constants'
+import { STATUS_CONFIG, ROOM_TYPE_CONFIG, localizeStatus, localizeType } from '@/domain/constants'
 import { Button } from './ui/Button'
 import type { RoomStatus, RoomType } from '@/domain/types'
 
@@ -66,7 +66,7 @@ export function RoomFilters() {
         <option value="">{t('filter.allStatuses')}</option>
         {STATUS_OPTIONS.map((s) => (
           <option key={s} value={s}>
-            {language === 'pt' ? STATUS_CONFIG[s].labelPt : STATUS_CONFIG[s].label}
+            {localizeStatus(STATUS_CONFIG[s], language)}
           </option>
         ))}
       </select>
@@ -81,7 +81,7 @@ export function RoomFilters() {
         <option value="">{t('filter.allTypes')}</option>
         {TYPE_OPTIONS.map((tp) => (
           <option key={tp} value={tp}>
-            {language === 'pt' ? ROOM_TYPE_CONFIG[tp].labelPt : ROOM_TYPE_CONFIG[tp].label}
+            {localizeType(ROOM_TYPE_CONFIG[tp], language)}
           </option>
         ))}
       </select>

@@ -6,7 +6,7 @@ import { Textarea } from './ui/Input'
 import { StatusBadge, TypeBadge } from './ui/Badge'
 import { useRoomStore } from '@/application/store/useRoomStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import { STATUS_CONFIG, ROOM_TYPE_CONFIG } from '@/domain/constants'
+import { STATUS_CONFIG, ROOM_TYPE_CONFIG, localizeStatus, localizeType } from '@/domain/constants'
 import type { Room, RoomStatus, RoomType } from '@/domain/types'
 
 const ALL_STATUSES: RoomStatus[] = [
@@ -110,7 +110,7 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
           <div className="grid grid-cols-2 gap-2">
             {ALL_STATUSES.map((s) => {
               const cfg = STATUS_CONFIG[s]
-              const label = language === 'pt' ? cfg.labelPt : cfg.label
+              const label = localizeStatus(cfg, language)
               return (
                 <button
                   key={s}
@@ -135,7 +135,7 @@ export function RoomDetailModal({ room, onClose }: RoomDetailModalProps) {
           <div className="grid grid-cols-4 gap-2">
             {ALL_TYPES.map((tp) => {
               const cfg = ROOM_TYPE_CONFIG[tp]
-              const label = language === 'pt' ? cfg.labelPt : cfg.label
+              const label = localizeType(cfg, language)
               return (
                 <button
                   key={tp}

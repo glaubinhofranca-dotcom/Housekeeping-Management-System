@@ -5,8 +5,8 @@ import { HousekeeperRoomCard } from '@/presentation/components/RoomCard'
 import { useRoomStore, selectHousekeeperRooms } from '@/application/store/useRoomStore'
 import { useAppStore } from '@/application/store/useAppStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import { STATUS_CONFIG } from '@/domain/constants'
-import type { RoomStatus } from '@/domain/types'
+import { STATUS_CONFIG, localizeStatus } from '@/domain/constants'
+import type { Language, RoomStatus } from '@/domain/types'
 import type { TranslationKey } from '@/application/i18n/translations'
 
 const WORK_STATUSES = new Set<RoomStatus>(['checkout', 'checkin_pending', 'occupied_dirty', 'vacant_dirty', 'clean'])
@@ -181,9 +181,9 @@ function AllDoneScreen({ t }: { t: (k: TranslationKey) => string }) {
   )
 }
 
-function DoneRoomRow({ room, language }: { room: import('@/domain/types').Room; language: string }) {
+function DoneRoomRow({ room, language }: { room: import('@/domain/types').Room; language: Language }) {
   const cfg = STATUS_CONFIG[room.status]
-  const label = language === 'pt' ? cfg.labelPt : cfg.label
+  const label = localizeStatus(cfg, language)
   return (
     <div className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 px-4 py-3">
       <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0">
