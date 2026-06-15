@@ -21,6 +21,8 @@ interface RoomStore {
 
   // Staff mutations
   addStaff: (staff: Omit<Staff, 'id'>) => void
+  updateStaff: (id: string, updates: Partial<Omit<Staff, 'id'>>) => void
+  deleteStaff: (id: string) => void
 
   // Filter mutations
   setFilters: (partial: Partial<RoomFilters>) => void
@@ -159,6 +161,22 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
     const staff = [...get().staff, { ...data, id: nanoid() }]
     save(get().rooms, staff)
     set({ staff })
+  },
+
+  updateStaff: (id, updates) => {
+    const staff = get().staff.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    save(get().rooms, staff)
+    set({ staff })
+  },
+
+  deleteStaff: (id) => {
+    const staff = get().staff.filter((s) => s.id !== id)
+    // Unassign all rooms that were assigned to this staff member
+    const rooms = get().rooms.map((r) =>
+      r.assignedTo === id ? { ...r, assignedTo: null, lastUpdated: ts() } : r,
+    )
+    save(rooms, staff)
+    set({ staff, rooms })
   },
 
   setFilters: (partial) => {

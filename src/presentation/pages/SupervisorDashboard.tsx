@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { LayoutGrid, Plus } from 'lucide-react'
+import { LayoutGrid, Plus, Users } from 'lucide-react'
 import { Header } from '@/presentation/components/Header'
 import { StatsBar } from '@/presentation/components/StatsBar'
 import { RoomFilters } from '@/presentation/components/RoomFilters'
 import { VirtualizedRoomList } from '@/presentation/components/VirtualizedRoomList'
 import { LoadRoomsModal } from '@/presentation/components/LoadRoomsModal'
 import { RoomDetailModal } from '@/presentation/components/RoomDetailModal'
+import { StaffModal } from '@/presentation/components/StaffModal'
 import { Button } from '@/presentation/components/ui/Button'
 import { useRoomStore, selectFilteredRooms } from '@/application/store/useRoomStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
@@ -19,6 +20,7 @@ export function SupervisorDashboard() {
   const filteredRooms = selectFilteredRooms(store)
 
   const [showLoadModal, setShowLoadModal] = useState(false)
+  const [showStaffModal, setShowStaffModal] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
 
   function handleStatusFilter(status: RoomStatus | null) {
@@ -64,6 +66,15 @@ export function SupervisorDashboard() {
         <div className="flex items-center gap-2">
           <Button
             size="sm"
+            variant="ghost"
+            icon={<Users size={14} />}
+            onClick={() => setShowStaffModal(true)}
+            className="border border-slate-200 text-slate-600"
+          >
+            <span className="hidden sm:inline">{t('staff.manageTeam')}</span>
+          </Button>
+          <Button
+            size="sm"
             variant="secondary"
             icon={<Plus size={14} />}
             onClick={handleAddRoom}
@@ -98,6 +109,7 @@ export function SupervisorDashboard() {
       {/* Modals */}
       <LoadRoomsModal open={showLoadModal} onClose={() => setShowLoadModal(false)} />
       <RoomDetailModal room={selectedRoom} onClose={() => setSelectedRoom(null)} />
+      <StaffModal open={showStaffModal} onClose={() => setShowStaffModal(false)} />
     </div>
   )
 }
@@ -115,9 +127,7 @@ function EmptyState({ onLoad, t, total }: EmptyStateProps) {
         <LayoutGrid size={36} className="text-slate-400" />
       </div>
       <div>
-        <h3 className="text-lg font-semibold text-slate-700">
-          {total === 0 ? t('msg.noRooms') : t('msg.noRooms')}
-        </h3>
+        <h3 className="text-lg font-semibold text-slate-700">{t('msg.noRooms')}</h3>
         <p className="text-sm text-slate-500 mt-1 max-w-xs">
           {total === 0 ? t('msg.noRoomsDesc') : 'Try adjusting your filters.'}
         </p>

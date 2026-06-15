@@ -94,6 +94,21 @@ export type TranslationKey =
   | 'msg.confirmReset'
   | 'msg.noRooms'
   | 'msg.noRoomsDesc'
+  | 'staff.title'
+  | 'staff.manageTeam'
+  | 'staff.supervisors'
+  | 'staff.housekeepers'
+  | 'staff.addSupervisor'
+  | 'staff.addHousekeeper'
+  | 'staff.namePlaceholder'
+  | 'staff.addBtn'
+  | 'staff.editName'
+  | 'staff.saveName'
+  | 'staff.deleteConfirm'
+  | 'staff.deleteWarning'
+  | 'staff.roomsAssigned'
+  | 'staff.noSupervisors'
+  | 'staff.noHousekeepers'
 
 type Translations = Record<TranslationKey, string>
 
@@ -193,6 +208,21 @@ export const en: Translations = {
   'msg.confirmReset': 'Are you sure you want to reset all rooms for today? This cannot be undone.',
   'msg.noRooms': 'No rooms found',
   'msg.noRoomsDesc': 'Use "Load Rooms" to set up the hotel rooms for today\'s shift.',
+  'staff.title': 'Manage Team',
+  'staff.manageTeam': 'Team',
+  'staff.supervisors': 'Supervisors',
+  'staff.housekeepers': 'Housekeepers',
+  'staff.addSupervisor': 'Add supervisor',
+  'staff.addHousekeeper': 'Add housekeeper',
+  'staff.namePlaceholder': 'Full name',
+  'staff.addBtn': 'Add',
+  'staff.editName': 'Edit name',
+  'staff.saveName': 'Save',
+  'staff.deleteConfirm': 'Remove this person from the team?',
+  'staff.deleteWarning': 'Their assigned rooms will become unassigned.',
+  'staff.roomsAssigned': 'rooms',
+  'staff.noSupervisors': 'No supervisors registered.',
+  'staff.noHousekeepers': 'No housekeepers registered.',
 }
 
 export const pt: Translations = {
@@ -291,6 +321,21 @@ export const pt: Translations = {
   'msg.confirmReset': 'Tem certeza que deseja reiniciar todos os quartos do dia? Esta ação não pode ser desfeita.',
   'msg.noRooms': 'Nenhum quarto encontrado',
   'msg.noRoomsDesc': 'Use "Carregar Quartos" para configurar os quartos do hotel para o turno de hoje.',
+  'staff.title': 'Gerenciar Equipe',
+  'staff.manageTeam': 'Equipe',
+  'staff.supervisors': 'Supervisoras',
+  'staff.housekeepers': 'Camareiras',
+  'staff.addSupervisor': 'Adicionar supervisora',
+  'staff.addHousekeeper': 'Adicionar camareira',
+  'staff.namePlaceholder': 'Nome completo',
+  'staff.addBtn': 'Adicionar',
+  'staff.editName': 'Editar nome',
+  'staff.saveName': 'Salvar',
+  'staff.deleteConfirm': 'Remover esta pessoa da equipe?',
+  'staff.deleteWarning': 'Os quartos atribuídos a ela ficarão sem responsável.',
+  'staff.roomsAssigned': 'quartos',
+  'staff.noSupervisors': 'Nenhuma supervisora cadastrada.',
+  'staff.noHousekeepers': 'Nenhuma camareira cadastrada.',
 }
 
 export const es: Translations = {
@@ -389,6 +434,21 @@ export const es: Translations = {
   'msg.confirmReset': '¿Está segura de que desea reiniciar todas las habitaciones del día? Esta acción no se puede deshacer.',
   'msg.noRooms': 'No se encontraron habitaciones',
   'msg.noRoomsDesc': 'Use "Cargar Habitaciones" para configurar las habitaciones del hotel para el turno de hoy.',
+  'staff.title': 'Gestionar Personal',
+  'staff.manageTeam': 'Personal',
+  'staff.supervisors': 'Supervisoras',
+  'staff.housekeepers': 'Camareras',
+  'staff.addSupervisor': 'Agregar supervisora',
+  'staff.addHousekeeper': 'Agregar camarera',
+  'staff.namePlaceholder': 'Nombre completo',
+  'staff.addBtn': 'Agregar',
+  'staff.editName': 'Editar nombre',
+  'staff.saveName': 'Guardar',
+  'staff.deleteConfirm': '¿Eliminar esta persona del equipo?',
+  'staff.deleteWarning': 'Sus habitaciones asignadas quedarán sin responsable.',
+  'staff.roomsAssigned': 'habitaciones',
+  'staff.noSupervisors': 'No hay supervisoras registradas.',
+  'staff.noHousekeepers': 'No hay camareras registradas.',
 }
 
 export const translations = { en, pt, es }
