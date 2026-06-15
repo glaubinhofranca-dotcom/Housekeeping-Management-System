@@ -5,12 +5,12 @@ import { StatsBar } from '@/presentation/components/StatsBar'
 import { RoomFilters } from '@/presentation/components/RoomFilters'
 import { VirtualizedRoomList } from '@/presentation/components/VirtualizedRoomList'
 import { LoadRoomsModal } from '@/presentation/components/LoadRoomsModal'
+import { AddRoomModal } from '@/presentation/components/AddRoomModal'
 import { RoomDetailModal } from '@/presentation/components/RoomDetailModal'
 import { StaffModal } from '@/presentation/components/StaffModal'
 import { Button } from '@/presentation/components/ui/Button'
 import { useRoomStore, selectFilteredRooms } from '@/application/store/useRoomStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import { nanoid } from '@/infrastructure/nanoid'
 import type { Room, RoomStatus } from '@/domain/types'
 import type { TranslationKey } from '@/application/i18n/translations'
 
@@ -20,6 +20,7 @@ export function SupervisorDashboard() {
   const filteredRooms = selectFilteredRooms(store)
 
   const [showLoadModal, setShowLoadModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
   const [showStaffModal, setShowStaffModal] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
 
@@ -27,29 +28,10 @@ export function SupervisorDashboard() {
     store.setFilters({ status })
   }
 
-  function handleAddRoom() {
-    const newRoom: Room = {
-      id: nanoid(),
-      number: String(Math.floor(Math.random() * 900) + 100),
-      floor: 1,
-      type: 'standard',
-      status: 'vacant_dirty',
-      priority: 50,
-      assignedTo: null,
-      notes: '',
-      guestName: null,
-      checkinTime: null,
-      beds: 1,
-      lastUpdated: new Date().toISOString(),
-    }
-    setSelectedRoom(newRoom)
-  }
-
   return (
     <div className="flex flex-col h-screen bg-slate-100">
       <Header />
 
-      {/* Stats bar */}
       <StatsBar
         activeStatus={store.filters.status}
         onStatusFilter={handleStatusFilter}
@@ -57,12 +39,11 @@ export function SupervisorDashboard() {
 
       {/* Action bar */}
       <div className="px-4 md:px-6 py-3 bg-white border-b border-slate-200 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">
-            <span className="font-semibold text-slate-800">{filteredRooms.length}</span>{' '}
-            {filteredRooms.length === 1 ? 'room' : 'rooms'}
-          </span>
-        </div>
+        <span className="text-sm text-slate-500">
+          <span className="font-semibold text-slate-800">{filteredRooms.length}</span>{' '}
+          {filteredRooms.length === 1 ? 'room' : 'rooms'}
+        </span>
+
         <div className="flex items-center gap-2">
           <Button
             size="sm"
@@ -77,7 +58,7 @@ export function SupervisorDashboard() {
             size="sm"
             variant="secondary"
             icon={<Plus size={14} />}
-            onClick={handleAddRoom}
+            onClick={() => setShowAddModal(true)}
           >
             <span className="hidden sm:inline">{t('action.addRoom')}</span>
           </Button>
@@ -92,10 +73,8 @@ export function SupervisorDashboard() {
         </div>
       </div>
 
-      {/* Filters */}
       <RoomFilters />
 
-      {/* Room list */}
       {filteredRooms.length === 0 ? (
         <EmptyState onLoad={() => setShowLoadModal(true)} t={t} total={store.rooms.length} />
       ) : (
@@ -106,8 +85,8 @@ export function SupervisorDashboard() {
         />
       )}
 
-      {/* Modals */}
       <LoadRoomsModal open={showLoadModal} onClose={() => setShowLoadModal(false)} />
+      <AddRoomModal open={showAddModal} onClose={() => setShowAddModal(false)} />
       <RoomDetailModal room={selectedRoom} onClose={() => setSelectedRoom(null)} />
       <StaffModal open={showStaffModal} onClose={() => setShowStaffModal(false)} />
     </div>

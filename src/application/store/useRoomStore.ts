@@ -10,7 +10,7 @@ interface RoomStore {
   filters: RoomFilters
 
   // Room mutations
-  addRoom: (data: Omit<Room, 'id' | 'lastUpdated'>) => void
+  addRoom: (data: Omit<Room, 'lastUpdated'>) => void
   updateRoom: (id: string, updates: Partial<Omit<Room, 'id'>>) => void
   deleteRoom: (id: string) => void
   updateRoomStatus: (id: string, status: RoomStatus) => void
@@ -56,7 +56,7 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
   filters: DEFAULT_FILTERS,
 
   addRoom: (data) => {
-    const room: Room = { ...data, id: nanoid(), lastUpdated: ts() }
+    const room: Room = { ...data, lastUpdated: ts() }
     const rooms = [...get().rooms, room]
     save(rooms, get().staff)
     set({ rooms })

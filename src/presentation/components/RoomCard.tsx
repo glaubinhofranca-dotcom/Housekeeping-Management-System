@@ -1,8 +1,11 @@
 import { type CSSProperties } from 'react'
-import { Clock, User, MessageSquare, BedDouble, ChevronUp, ChevronDown, CheckCircle2, BellOff, KeyRound } from 'lucide-react'
+import {
+  Clock, User, MessageSquare, BedDouble,
+  ChevronUp, ChevronDown, CheckCircle2, BellOff, Lock,
+} from 'lucide-react'
 import { StatusBadge, TypeBadge } from './ui/Badge'
 import { Button } from './ui/Button'
-import type { Room, Staff } from '@/domain/types'
+import type { Room, Staff, RoomStatus } from '@/domain/types'
 import { useTranslation } from '@/application/i18n/LanguageContext'
 import { useRoomStore } from '@/application/store/useRoomStore'
 
@@ -27,12 +30,10 @@ export function SupervisorRoomCard({ room, staff, onClick, style }: SupervisorRo
           hover:shadow-md transition-all duration-150 p-4 group"
       >
         <div className="flex items-start gap-3">
-          {/* Room number */}
           <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
             <span className="text-lg font-bold text-slate-700">{room.number}</span>
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <StatusBadge status={room.status} />
@@ -94,7 +95,13 @@ export function SupervisorRoomCard({ room, staff, onClick, style }: SupervisorRo
 
 // ── Housekeeper Card ─────────────────────────────────────────────────────────
 
-const ACTIVE_STATUSES = new Set(['checkout', 'checkin_pending', 'occupied_dirty', 'vacant_dirty'])
+// Statuses where the housekeeper has pending work
+const PENDING_STATUSES = new Set<RoomStatus>([
+  'checkout', 'checkin_pending', 'occupied_dirty', 'vacant_dirty',
+])
+
+// DND is only meaningful when a guest is present
+const DND_ELIGIBLE = new Set<RoomStatus>(['occupied_dirty'])
 
 interface HousekeeperRoomCardProps {
   room: Room
@@ -106,7 +113,8 @@ export function HousekeeperRoomCard({ room, index, total }: HousekeeperRoomCardP
   const { t } = useTranslation()
   const { updateRoomStatus, movePriority } = useRoomStore()
 
-  const isActive = ACTIVE_STATUSES.has(room.status)
+  const isPending = PENDING_STATUSES.has(room.status)
+  const isDndEligible = DND_ELIGIBLE.has(room.status)
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -132,25 +140,29 @@ export function HousekeeperRoomCard({ room, index, total }: HousekeeperRoomCardP
           </div>
         </div>
 
-        {/* Priority controls */}
-        <div className="flex flex-col gap-0.5 flex-shrink-0">
-          <button
-            disabled={index === 0}
-            onClick={() => movePriority(room.id, 'up')}
-            className="p-1 rounded text-slate-400 hover:text-[#1e3a5f] hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            title={t('action.priorityUp')}
-          >
-            <ChevronUp size={16} />
-          </button>
-          <button
-            disabled={index === total - 1}
-            onClick={() => movePriority(room.id, 'down')}
-            className="p-1 rounded text-slate-400 hover:text-[#1e3a5f] hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            title={t('action.priorityDown')}
-          >
-            <ChevronDown size={16} />
-          </button>
-        </div>
+        {/* Priority controls — only on pending rooms */}
+        {isPending && (
+          <div className="flex flex-col gap-0.5 flex-shrink-0">
+            <button
+              disabled={index === 0}
+              onClick={() => movePriority(room.id, 'up')}
+              className="p-1 rounded text-slate-400 hover:text-[#1e3a5f] hover:bg-slate-100
+                disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title={t('action.priorityUp')}
+            >
+              <ChevronUp size={16} />
+            </button>
+            <button
+              disabled={index === total - 1}
+              onClick={() => movePriority(room.id, 'down')}
+              className="p-1 rounded text-slate-400 hover:text-[#1e3a5f] hover:bg-slate-100
+                disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title={t('action.priorityDown')}
+            >
+              <ChevronDown size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Guest name / notes */}
@@ -171,10 +183,11 @@ export function HousekeeperRoomCard({ room, index, total }: HousekeeperRoomCardP
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="p-3 flex gap-2 flex-wrap">
-        {isActive && (
-          <>
+      {/* Actions */}
+      <div className="p-3">
+        {isPending ? (
+          <div className="flex gap-2">
+            {/* PRIMARY: Ready for Inspection — always available for pending rooms */}
             <Button
               size="sm"
               variant="success"
@@ -185,40 +198,25 @@ export function HousekeeperRoomCard({ room, index, total }: HousekeeperRoomCardP
               {t('action.markClean')}
             </Button>
 
-            {room.status === 'checkout' || room.status === 'checkin_pending' ? (
+            {/* DND — only when guest is present */}
+            {isDndEligible && (
               <Button
                 size="sm"
-                variant="primary"
-                icon={<KeyRound size={14} />}
-                onClick={() => updateRoomStatus(room.id, 'inspected')}
-                className="flex-1"
+                variant="ghost"
+                icon={<BellOff size={14} />}
+                onClick={() => updateRoomStatus(room.id, 'dnd')}
+                className="border border-slate-200 text-slate-600"
               >
-                {t('action.markCheckinReady')}
+                {t('action.markDnd')}
               </Button>
-            ) : null}
-
-            <Button
-              size="sm"
-              variant="ghost"
-              icon={<BellOff size={14} />}
-              onClick={() => updateRoomStatus(room.id, 'dnd')}
-              className="border border-slate-200"
-            >
-              {t('action.markDnd')}
-            </Button>
-          </>
-        )}
-
-        {room.status === 'clean' && (
-          <Button
-            size="sm"
-            variant="primary"
-            icon={<KeyRound size={14} />}
-            onClick={() => updateRoomStatus(room.id, 'inspected')}
-            className="flex-1"
-          >
-            {t('action.markInspected')}
-          </Button>
+            )}
+          </div>
+        ) : (
+          /* Supervisor-only notice for non-pending statuses */
+          <div className="flex items-center gap-2 py-1 text-xs text-slate-400">
+            <Lock size={12} className="flex-shrink-0" />
+            <span>{t('action.supervisorOnly')}</span>
+          </div>
         )}
       </div>
     </div>

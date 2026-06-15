@@ -109,6 +109,12 @@ export type TranslationKey =
   | 'staff.roomsAssigned'
   | 'staff.noSupervisors'
   | 'staff.noHousekeepers'
+  | 'room.addTitle'
+  | 'room.editTitle'
+  | 'room.floorHint'
+  | 'room.initialStatus'
+  | 'action.readyForInspection'
+  | 'action.supervisorOnly'
 
 type Translations = Record<TranslationKey, string>
 
@@ -157,10 +163,10 @@ export const en: Translations = {
   'action.delete': 'Delete',
   'action.edit': 'Edit',
   'action.assign': 'Assign',
-  'action.markClean': 'Mark Clean',
+  'action.markClean': 'Ready for Inspection',
   'action.markDnd': 'DND',
   'action.markCheckinReady': 'Check-in Ready',
-  'action.markInspected': 'Inspected',
+  'action.markInspected': 'Mark Inspected',
   'action.priorityUp': 'Move Up',
   'action.priorityDown': 'Move Down',
   'action.refresh': 'Refresh',
@@ -223,6 +229,12 @@ export const en: Translations = {
   'staff.roomsAssigned': 'rooms',
   'staff.noSupervisors': 'No supervisors registered.',
   'staff.noHousekeepers': 'No housekeepers registered.',
+  'room.addTitle': 'Add Room',
+  'room.editTitle': 'Edit Room',
+  'room.floorHint': 'Auto-calculated from number',
+  'room.initialStatus': 'Initial Status',
+  'action.readyForInspection': 'Ready for Inspection',
+  'action.supervisorOnly': 'Supervisor only',
 }
 
 export const pt: Translations = {
@@ -270,10 +282,10 @@ export const pt: Translations = {
   'action.delete': 'Excluir',
   'action.edit': 'Editar',
   'action.assign': 'Atribuir',
-  'action.markClean': 'Marcar Limpo',
-  'action.markDnd': 'NPD',
+  'action.markClean': 'Pronto p/ Inspeção',
+  'action.markDnd': 'Não Perturbe',
   'action.markCheckinReady': 'Pronto p/ Check-in',
-  'action.markInspected': 'Inspecionado',
+  'action.markInspected': 'Marcar Inspecionado',
   'action.priorityUp': 'Subir Prioridade',
   'action.priorityDown': 'Baixar Prioridade',
   'action.refresh': 'Atualizar',
@@ -336,6 +348,12 @@ export const pt: Translations = {
   'staff.roomsAssigned': 'quartos',
   'staff.noSupervisors': 'Nenhuma supervisora cadastrada.',
   'staff.noHousekeepers': 'Nenhuma camareira cadastrada.',
+  'room.addTitle': 'Adicionar Quarto',
+  'room.editTitle': 'Editar Quarto',
+  'room.floorHint': 'Calculado automaticamente do número',
+  'room.initialStatus': 'Status Inicial',
+  'action.readyForInspection': 'Pronto p/ Inspeção',
+  'action.supervisorOnly': 'Apenas supervisor',
 }
 
 export const es: Translations = {
@@ -383,10 +401,10 @@ export const es: Translations = {
   'action.delete': 'Eliminar',
   'action.edit': 'Editar',
   'action.assign': 'Asignar',
-  'action.markClean': 'Marcar Limpia',
-  'action.markDnd': 'NMO',
+  'action.markClean': 'Lista p/ Inspección',
+  'action.markDnd': 'No Molestar',
   'action.markCheckinReady': 'Lista p/ Check-in',
-  'action.markInspected': 'Inspeccionada',
+  'action.markInspected': 'Marcar Inspeccionada',
   'action.priorityUp': 'Subir Prioridad',
   'action.priorityDown': 'Bajar Prioridad',
   'action.refresh': 'Actualizar',
@@ -449,6 +467,12 @@ export const es: Translations = {
   'staff.roomsAssigned': 'habitaciones',
   'staff.noSupervisors': 'No hay supervisoras registradas.',
   'staff.noHousekeepers': 'No hay camareras registradas.',
+  'room.addTitle': 'Agregar Habitación',
+  'room.editTitle': 'Editar Habitación',
+  'room.floorHint': 'Calculado automáticamente del número',
+  'room.initialStatus': 'Estado Inicial',
+  'action.readyForInspection': 'Lista p/ Inspección',
+  'action.supervisorOnly': 'Solo supervisor',
 }
 
 export const translations = { en, pt, es }
