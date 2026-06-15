@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { UserCog, Sparkles, ChevronLeft } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAppStore } from '@/application/store/useAppStore'
-import { useRoomStore } from '@/application/store/useRoomStore'
+import { useAuthStore } from '@/application/store/useAuthStore'
+import { supabase } from '@/infrastructure/supabase'
 import { useTranslation } from '@/application/i18n/LanguageContext'
-import type { Staff, UserRole, Language } from '@/domain/types'
+import type { Language } from '@/domain/types'
 
 const LANGUAGES: { code: Language; native: string }[] = [
   { code: 'en', native: 'EN' },
@@ -11,24 +12,77 @@ const LANGUAGES: { code: Language; native: string }[] = [
   { code: 'es', native: 'ES' },
 ]
 
-type Step = 'role' | 'person'
+type Mode = 'checking' | 'first-run' | 'login'
 
 export function LoginPage() {
-  const { login, setLanguage } = useAppStore()
-  const { staff } = useRoomStore()
+  const { setLanguage } = useAppStore()
+  const { login, authError } = useAuthStore()
   const { t, language } = useTranslation()
 
-  const [step, setStep] = useState<Step>('role')
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
+  const [mode, setMode] = useState<Mode>('checking')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [showPwd, setShowPwd] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function selectRole(role: UserRole) {
-    setSelectedRole(role)
-    setStep('person')
+  // Check whether any admin account exists
+  useEffect(() => {
+    async function check() {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+
+      if (error) {
+        // Table might not exist yet
+        setError('Database not configured. Please run the setup SQL in Supabase first.')
+        setMode('login')
+        return
+      }
+
+      setMode(count === 0 ? 'first-run' : 'login')
+    }
+    check()
+  }, [])
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    await login(email, password)
+    setLoading(false)
   }
 
-  const filteredStaff: Staff[] = selectedRole
-    ? staff.filter((s) => s.role === selectedRole)
-    : []
+  async function handleCreateAdmin(e: React.FormEvent) {
+    e.preventDefault()
+    if (!name.trim() || !email.trim() || !password.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      const { data, error: signUpErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name: name.trim(), role: 'admin' } },
+      })
+      if (signUpErr) throw signUpErr
+      if (!data.user) throw new Error('Account creation failed.')
+      // Insert profile immediately
+      await supabase.from('profiles').upsert({
+        id: data.user.id,
+        name: name.trim(),
+        role: 'admin',
+        email,
+      })
+      // Auto login (session already set by signUp when email confirm is disabled)
+      await useAuthStore.getState().init()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create account.')
+    }
+    setLoading(false)
+  }
+
+  const displayError = error ?? authError
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1e3a5f] via-[#1e3a5f] to-[#16304f] flex flex-col">
@@ -53,7 +107,7 @@ export function LoginPage() {
 
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-sm">
           {/* Logo */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 mb-5">
@@ -72,65 +126,140 @@ export function LoginPage() {
 
           {/* Card */}
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            {step === 'role' ? (
-              <div className="p-8">
-                <p className="text-center text-slate-500 text-sm mb-6">{t('login.selectRole')}</p>
+            {mode === 'checking' ? (
+              <div className="p-8 flex justify-center">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#1e3a5f] animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-2 h-2 rounded-full bg-[#1e3a5f] animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-2 h-2 rounded-full bg-[#1e3a5f] animate-bounce" />
+                </div>
+              </div>
+            ) : mode === 'first-run' ? (
+              <form onSubmit={handleCreateAdmin} className="p-8 space-y-5">
+                <div>
+                  <p className="text-base font-semibold text-slate-800">{t('login.createAdmin')}</p>
+                  <p className="text-sm text-slate-500 mt-1">{t('login.firstRun')}</p>
+                </div>
+
+                {displayError && (
+                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{displayError}</p>
+                )}
 
                 <div className="space-y-3">
-                  <RoleButton
-                    icon={
-                      <UserCog size={28} className="text-[#1e3a5f]" />
-                    }
-                    title={t('login.supervisor')}
-                    description={t('login.supervisorDesc')}
-                    onClick={() => selectRole('supervisor')}
-                    accent="border-[#1e3a5f]"
-                    bg="hover:bg-[#1e3a5f]/5"
-                  />
-                  <RoleButton
-                    icon={
-                      <Sparkles size={28} className="text-[#c9a84c]" />
-                    }
-                    title={t('login.housekeeper')}
-                    description={t('login.housekeeperDesc')}
-                    onClick={() => selectRole('housekeeper')}
-                    accent="border-[#c9a84c]"
-                    bg="hover:bg-amber-50"
-                  />
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('admin.name')}</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      placeholder="Glauber Rocha"
+                      className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-300 bg-white
+                        focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20
+                        text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('login.email')}</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="glauber@hotel.com"
+                      className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-300 bg-white
+                        focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20
+                        text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('login.password')}</label>
+                    <div className="relative">
+                      <input
+                        type={showPwd ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="w-full px-3 py-2.5 pr-10 text-sm rounded-xl border border-slate-300 bg-white
+                          focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20
+                          text-slate-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPwd((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="p-8">
+
                 <button
-                  onClick={() => setStep('role')}
-                  className="flex items-center gap-1.5 text-slate-500 hover:text-slate-700 text-sm mb-5 transition-colors"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 bg-[#1e3a5f] hover:bg-[#16304f] disabled:bg-slate-300
+                    text-white font-semibold rounded-xl text-sm transition-colors"
                 >
-                  <ChevronLeft size={16} />
-                  {t('login.back')}
+                  {loading ? t('login.creating') : t('login.createAdmin')}
                 </button>
+              </form>
+            ) : (
+              <form onSubmit={handleLogin} className="p-8 space-y-5">
+                <p className="text-base font-semibold text-slate-800">{t('login.signIn')}</p>
 
-                <p className="text-slate-600 font-medium mb-4">{t('login.selectPerson')}</p>
+                {displayError && (
+                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{displayError}</p>
+                )}
 
-                <div className="space-y-2">
-                  {filteredStaff.map((person) => (
-                    <button
-                      key={person.id}
-                      onClick={() => login(person)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-slate-200
-                        hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/5 transition-all text-left group"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-[#1e3a5f]/10
-                        flex items-center justify-center text-sm font-bold text-slate-600 group-hover:text-[#1e3a5f] flex-shrink-0">
-                        {person.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-700">{person.name}</p>
-                        <p className="text-xs text-slate-400 capitalize">{person.role}</p>
-                      </div>
-                    </button>
-                  ))}
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('login.email')}</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                      className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-300 bg-white
+                        focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20
+                        text-slate-800 placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('login.password')}</label>
+                    <div className="relative">
+                      <input
+                        type={showPwd ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        autoComplete="current-password"
+                        className="w-full px-3 py-2.5 pr-10 text-sm rounded-xl border border-slate-300 bg-white
+                          focus:border-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20
+                          text-slate-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPwd((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-2.5 bg-[#1e3a5f] hover:bg-[#16304f] disabled:bg-slate-300
+                    text-white font-semibold rounded-xl text-sm transition-colors"
+                >
+                  {loading ? t('login.signingIn') : t('login.signIn')}
+                </button>
+              </form>
             )}
           </div>
 
@@ -143,37 +272,3 @@ export function LoginPage() {
   )
 }
 
-interface RoleButtonProps {
-  icon: React.ReactNode
-  title: string
-  description: string
-  onClick: () => void
-  accent: string
-  bg: string
-}
-
-function RoleButton({ icon, title, description, onClick, accent, bg }: RoleButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 border-transparent
-        ${bg} hover:${accent} hover:shadow-sm transition-all text-left group`}
-      style={{ borderColor: 'transparent' }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget
-        el.style.borderColor = accent.replace('border-', '')
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'transparent'
-      }}
-    >
-      <div className="p-3 rounded-xl bg-slate-100 flex-shrink-0 group-hover:bg-white transition-colors">
-        {icon}
-      </div>
-      <div>
-        <p className="font-semibold text-slate-800">{title}</p>
-        <p className="text-sm text-slate-500 mt-0.5">{description}</p>
-      </div>
-    </button>
-  )
-}

@@ -14,7 +14,11 @@ import { useTranslation } from '@/application/i18n/LanguageContext'
 import type { Room, RoomStatus } from '@/domain/types'
 import type { TranslationKey } from '@/application/i18n/translations'
 
-export function SupervisorDashboard() {
+interface SupervisorDashboardProps {
+  onAdminClick?: () => void
+}
+
+export function SupervisorDashboard({ onAdminClick }: SupervisorDashboardProps) {
   const { t } = useTranslation()
   const store = useRoomStore()
   const filteredRooms = selectFilteredRooms(store)
@@ -30,7 +34,7 @@ export function SupervisorDashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-100">
-      <Header />
+      <Header onAdminClick={onAdminClick} />
 
       <StatsBar
         activeStatus={store.filters.status}

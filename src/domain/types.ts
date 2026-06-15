@@ -10,7 +10,7 @@ export type RoomStatus =
 
 export type RoomType = 'standard' | 'deluxe' | 'suite' | 'presidential'
 
-export type UserRole = 'supervisor' | 'housekeeper'
+export type UserRole = 'admin' | 'supervisor' | 'housekeeper'
 
 export type Language = 'en' | 'pt' | 'es'
 

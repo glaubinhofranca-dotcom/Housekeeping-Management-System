@@ -1,10 +1,15 @@
-import { LogOut } from 'lucide-react'
+import { LogOut, Shield } from 'lucide-react'
 import { useAppStore } from '@/application/store/useAppStore'
+import { useAuthStore } from '@/application/store/useAuthStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
 import { Button } from './ui/Button'
 import type { Language } from '@/domain/types'
 
 const LANGUAGES: Language[] = ['en', 'pt', 'es']
+
+interface HeaderProps {
+  onAdminClick?: () => void
+}
 
 function LanguagePicker() {
   const { setLanguage } = useAppStore()
@@ -29,8 +34,8 @@ function LanguagePicker() {
   )
 }
 
-export function Header() {
-  const { currentUser, logout } = useAppStore()
+export function Header({ onAdminClick }: HeaderProps) {
+  const { profile, logout } = useAuthStore()
   const { t } = useTranslation()
 
   return (
@@ -54,25 +59,35 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          {currentUser && (
+          {profile && (
             <span className="hidden md:flex items-center gap-2 text-white/80 text-sm mr-1">
               <span className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold text-white">
-                {currentUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                {profile.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
               </span>
-              <span>{currentUser.name}</span>
+              <span>{profile.name}</span>
             </span>
           )}
 
           <LanguagePicker />
+
+          {profile?.role === 'admin' && onAdminClick && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onAdminClick}
+              className="text-white hover:bg-white/10 border-white/20"
+              icon={<Shield size={14} />}
+            >
+              <span className="hidden sm:inline">{t('admin.title')}</span>
+            </Button>
+          )}
 
           <Button
             size="sm"
             variant="ghost"
             onClick={logout}
             className="text-white hover:bg-white/10 border-white/20"
-            icon={
-              <LogOut size={14} />
-            }
+            icon={<LogOut size={14} />}
           >
             <span className="hidden sm:inline">{t('nav.logout')}</span>
           </Button>

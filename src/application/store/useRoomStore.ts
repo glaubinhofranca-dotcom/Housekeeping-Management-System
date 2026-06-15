@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { nanoid } from '@/infrastructure/nanoid'
-import { supabase, rowToRoom, roomToRow, rowToStaff } from '@/infrastructure/supabase'
-import type { RoomRow, StaffRow } from '@/infrastructure/supabase'
+import { supabase, rowToRoom, roomToRow, rowToProfile } from '@/infrastructure/supabase'
+import type { RoomRow, ProfileRow } from '@/infrastructure/supabase'
 import type { Room, Staff, RoomStatus, RoomFilters, FloorConfig } from '@/domain/types'
-import { DEFAULT_ROOMS, DEFAULT_STAFF, PRIORITY_DEFAULTS, ROOM_TYPE_CONFIG } from '@/domain/constants'
+import { DEFAULT_ROOMS, PRIORITY_DEFAULTS, ROOM_TYPE_CONFIG } from '@/domain/constants'
 
 interface RoomStore {
   rooms: Room[]
@@ -24,11 +24,6 @@ interface RoomStore {
   movePriority: (id: string, direction: 'up' | 'down') => void
   bulkGenerateRooms: (floors: FloorConfig[], replace: boolean) => void
   resetAllRooms: () => void
-
-  // Staff mutations
-  addStaff: (staff: Omit<Staff, 'id'>) => void
-  updateStaff: (id: string, updates: Partial<Omit<Staff, 'id'>>) => void
-  deleteStaff: (id: string) => void
 
   // Filter mutations (local only)
   setFilters: (partial: Partial<RoomFilters>) => void
@@ -72,25 +67,21 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
       if (roomRows && roomRows.length > 0) {
         rooms = (roomRows as RoomRow[]).map(rowToRoom)
       } else {
-        // Seed defaults on first use
         rooms = DEFAULT_ROOMS
         await supabase.from('rooms').upsert(rooms.map(roomToRow))
       }
 
-      // Load staff
-      const { data: staffRows, error: staffErr } = await supabase
-        .from('staff')
+      // Load staff from profiles table
+      const { data: profileRows, error: profileErr } = await supabase
+        .from('profiles')
         .select('*')
+        .order('name')
 
-      if (staffErr) throw staffErr
+      if (profileErr) throw profileErr
 
-      let staff: Staff[]
-      if (staffRows && staffRows.length > 0) {
-        staff = (staffRows as StaffRow[]).map(rowToStaff)
-      } else {
-        staff = DEFAULT_STAFF
-        await supabase.from('staff').upsert(staff)
-      }
+      const staff: Staff[] = (profileRows as ProfileRow[] ?? [])
+        .map(rowToProfile)
+        .map((p) => ({ id: p.id, name: p.name, role: p.role }))
 
       set({ rooms, staff, initialized: true, error: null })
 
@@ -122,13 +113,14 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
         .subscribe()
 
       supabase
-        .channel('staff-changes')
+        .channel('profiles-changes')
         .on(
           'postgres_changes',
-          { event: '*', schema: 'public', table: 'staff' },
+          { event: '*', schema: 'public', table: 'profiles' },
           (payload) => {
             if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-              const updated = rowToStaff(payload.new as StaffRow)
+              const p = rowToProfile(payload.new as ProfileRow)
+              const updated: Staff = { id: p.id, name: p.name, role: p.role }
               set((state) => {
                 const exists = state.staff.some((s) => s.id === updated.id)
                 return {
@@ -139,7 +131,7 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
               })
             }
             if (payload.eventType === 'DELETE') {
-              const id = (payload.old as StaffRow).id
+              const id = (payload.old as ProfileRow).id
               set((state) => ({ staff: state.staff.filter((s) => s.id !== id) }))
             }
           },
@@ -236,7 +228,6 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
       }),
     }))
 
-    // Write both swapped priorities to Supabase
     Promise.all([
       supabase.from('rooms').update({ priority: bPriority }).eq('id', aId),
       supabase.from('rooms').update({ priority: aPriority }).eq('id', bId),
@@ -286,41 +277,6 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
     set({ rooms })
     supabase.from('rooms').upsert(rooms.map(roomToRow))
       .then(({ error }) => { if (error) console.error('resetAllRooms:', error) })
-  },
-
-  // ── Staff mutations ────────────────────────────────────────────────────────
-
-  addStaff: (data) => {
-    const member: Staff = { ...data, id: nanoid() }
-    set((state) => ({ staff: [...state.staff, member] }))
-    supabase.from('staff').insert(member).then(({ error }) => {
-      if (error) console.error('addStaff:', error)
-    })
-  },
-
-  updateStaff: (id, updates) => {
-    set((state) => ({
-      staff: state.staff.map((s) => (s.id === id ? { ...s, ...updates } : s)),
-    }))
-    supabase.from('staff').update(updates).eq('id', id).then(({ error }) => {
-      if (error) console.error('updateStaff:', error)
-    })
-  },
-
-  deleteStaff: (id) => {
-    set((state) => ({
-      staff: state.staff.filter((s) => s.id !== id),
-      rooms: state.rooms.map((r) =>
-        r.assignedTo === id ? { ...r, assignedTo: null, lastUpdated: ts() } : r,
-      ),
-    }))
-    // Unassign rooms in DB, then delete staff
-    supabase
-      .from('rooms')
-      .update({ assigned_to: null })
-      .eq('assigned_to', id)
-      .then(() => supabase.from('staff').delete().eq('id', id))
-      .then(({ error }) => { if (error) console.error('deleteStaff:', error) })
   },
 
   // ── Filters ────────────────────────────────────────────────────────────────

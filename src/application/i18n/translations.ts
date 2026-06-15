@@ -115,6 +115,26 @@ export type TranslationKey =
   | 'room.initialStatus'
   | 'action.readyForInspection'
   | 'action.supervisorOnly'
+  | 'login.email'
+  | 'login.password'
+  | 'login.signIn'
+  | 'login.firstRun'
+  | 'login.createAdmin'
+  | 'login.creating'
+  | 'login.signingIn'
+  | 'admin.title'
+  | 'admin.users'
+  | 'admin.createUser'
+  | 'admin.name'
+  | 'admin.email'
+  | 'admin.password'
+  | 'admin.role'
+  | 'admin.createBtn'
+  | 'admin.deleteConfirm'
+  | 'admin.deleteWarning'
+  | 'admin.back'
+  | 'admin.noUsers'
+  | 'admin.editRole'
 
 type Translations = Record<TranslationKey, string>
 
@@ -235,6 +255,26 @@ export const en: Translations = {
   'room.initialStatus': 'Initial Status',
   'action.readyForInspection': 'Ready for Inspection',
   'action.supervisorOnly': 'Supervisor only',
+  'login.email': 'Email',
+  'login.password': 'Password',
+  'login.signIn': 'Sign In',
+  'login.firstRun': 'Welcome! Create your admin account to get started.',
+  'login.createAdmin': 'Create Admin Account',
+  'login.creating': 'Creating account...',
+  'login.signingIn': 'Signing in...',
+  'admin.title': 'Admin Panel',
+  'admin.users': 'Users',
+  'admin.createUser': 'Create User',
+  'admin.name': 'Full Name',
+  'admin.email': 'Email',
+  'admin.password': 'Password',
+  'admin.role': 'Role',
+  'admin.createBtn': 'Create',
+  'admin.deleteConfirm': 'Remove this user?',
+  'admin.deleteWarning': 'They will no longer be able to log in.',
+  'admin.back': 'Back to Dashboard',
+  'admin.noUsers': 'No users yet.',
+  'admin.editRole': 'Change Role',
 }
 
 export const pt: Translations = {
@@ -354,6 +394,26 @@ export const pt: Translations = {
   'room.initialStatus': 'Status Inicial',
   'action.readyForInspection': 'Pronto p/ Inspeção',
   'action.supervisorOnly': 'Apenas supervisor',
+  'login.email': 'Email',
+  'login.password': 'Senha',
+  'login.signIn': 'Entrar',
+  'login.firstRun': 'Bem-vindo! Crie sua conta de administrador para começar.',
+  'login.createAdmin': 'Criar Conta Admin',
+  'login.creating': 'Criando conta...',
+  'login.signingIn': 'Entrando...',
+  'admin.title': 'Painel Admin',
+  'admin.users': 'Usuários',
+  'admin.createUser': 'Criar Usuário',
+  'admin.name': 'Nome Completo',
+  'admin.email': 'Email',
+  'admin.password': 'Senha',
+  'admin.role': 'Cargo',
+  'admin.createBtn': 'Criar',
+  'admin.deleteConfirm': 'Remover este usuário?',
+  'admin.deleteWarning': 'Ele não poderá mais fazer login.',
+  'admin.back': 'Voltar ao Painel',
+  'admin.noUsers': 'Nenhum usuário cadastrado.',
+  'admin.editRole': 'Alterar Cargo',
 }
 
 export const es: Translations = {
@@ -473,6 +533,26 @@ export const es: Translations = {
   'room.initialStatus': 'Estado Inicial',
   'action.readyForInspection': 'Lista p/ Inspección',
   'action.supervisorOnly': 'Solo supervisor',
+  'login.email': 'Correo',
+  'login.password': 'Contraseña',
+  'login.signIn': 'Ingresar',
+  'login.firstRun': '¡Bienvenido! Crea tu cuenta de administrador para comenzar.',
+  'login.createAdmin': 'Crear Cuenta Admin',
+  'login.creating': 'Creando cuenta...',
+  'login.signingIn': 'Ingresando...',
+  'admin.title': 'Panel Admin',
+  'admin.users': 'Usuarios',
+  'admin.createUser': 'Crear Usuario',
+  'admin.name': 'Nombre Completo',
+  'admin.email': 'Correo',
+  'admin.password': 'Contraseña',
+  'admin.role': 'Cargo',
+  'admin.createBtn': 'Crear',
+  'admin.deleteConfirm': '¿Eliminar este usuario?',
+  'admin.deleteWarning': 'Ya no podrá iniciar sesión.',
+  'admin.back': 'Volver al Panel',
+  'admin.noUsers': 'No hay usuarios aún.',
+  'admin.editRole': 'Cambiar Cargo',
 }
 
 export const translations = { en, pt, es }

@@ -3,7 +3,7 @@ import { CheckCircle2, Star } from 'lucide-react'
 import { Header } from '@/presentation/components/Header'
 import { HousekeeperRoomCard } from '@/presentation/components/RoomCard'
 import { useRoomStore, selectHousekeeperRooms } from '@/application/store/useRoomStore'
-import { useAppStore } from '@/application/store/useAppStore'
+import { useAuthStore } from '@/application/store/useAuthStore'
 import { useTranslation } from '@/application/i18n/LanguageContext'
 import { STATUS_CONFIG, localizeStatus } from '@/domain/constants'
 import type { Language, RoomStatus } from '@/domain/types'
@@ -13,7 +13,7 @@ const WORK_STATUSES = new Set<RoomStatus>(['checkout', 'checkin_pending', 'occup
 
 export function HousekeeperPage() {
   const { t, language } = useTranslation()
-  const { currentUser } = useAppStore()
+  const { profile: currentUser } = useAuthStore()
   const store = useRoomStore()
 
   const [floorFilter, setFloorFilter] = useState<number | null>(null)
