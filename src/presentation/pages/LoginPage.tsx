@@ -60,22 +60,67 @@ export function LoginPage() {
     setLoading(true)
     setError(null)
     try {
-      const { data, error: signUpErr } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { name: name.trim(), role: 'admin' } },
-      })
-      if (signUpErr) throw signUpErr
-      if (!data.user) throw new Error('Account creation failed.')
-      // Insert profile immediately
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
+      let userId: string
+
+      // Try signing in first — handles the case where the auth user was already created
+      // but the profile record is missing (e.g., previous attempt failed partway through)
+      const { data: signInFirst } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (signInFirst.session?.user) {
+        userId = signInFirst.session.user.id
+      } else {
+        // Auth user doesn't exist yet — create it
+        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name: name.trim(), role: 'admin' } },
+        })
+        if (signUpErr) {
+          const msg = signUpErr.message.toLowerCase()
+          throw new Error(
+            msg.includes('registered')
+              ? 'An account with this email already exists. Use the same password you created it with.'
+              : signUpErr.message,
+          )
+        }
+        if (!signUpData.user) throw new Error('Account creation failed.')
+        userId = signUpData.user.id
+
+        // If signUp didn't auto-create a session, sign in now
+        if (!signUpData.session) {
+          const { data: signInAfter, error: signInAfterErr } = await supabase.auth.signInWithPassword({ email, password })
+          if (signInAfterErr) {
+            const msg = signInAfterErr.message.toLowerCase()
+            throw new Error(
+              msg.includes('confirm')
+                ? 'Disable "Email Confirmations" in Supabase → Authentication → Settings, then try again.'
+                : signInAfterErr.message,
+            )
+          }
+          if (!signInAfter.session) throw new Error('Login failed after account creation.')
+        }
+      }
+
+      // Create (or repair) the admin profile row
+      const { error: profileErr } = await supabase.from('profiles').upsert({
+        id: userId,
         name: name.trim(),
         role: 'admin',
         email,
       })
-      // Auto login (session already set by signUp when email confirm is disabled)
-      await useAuthStore.getState().init()
+      if (profileErr) {
+        throw new Error(
+          `Profile setup failed: ${profileErr.message}. ` +
+          `Make sure you ran the Supabase SQL migration including the RLS policy.`,
+        )
+      }
+
+      // Set profile directly so we bypass the sign-out race condition in init()
+      useAuthStore.setState({
+        profile: { id: userId, name: name.trim(), role: 'admin', email },
+        authLoading: false,
+        authError: null,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account.')
     }

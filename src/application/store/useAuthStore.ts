@@ -44,8 +44,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         if (profile) {
           set({ profile, authLoading: false })
         } else {
+          // Profile missing (deleted or first-run failed). Sign out so the
+          // login page can show a fresh form rather than a redirect loop.
           await supabase.auth.signOut()
-          set({ profile: null, authLoading: false })
+          set({ profile: null, authLoading: false, authError: null })
         }
       } else {
         set({ profile: null, authLoading: false })
