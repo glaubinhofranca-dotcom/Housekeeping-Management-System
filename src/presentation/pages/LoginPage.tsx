@@ -56,7 +56,15 @@ export function LoginPage() {
 
   async function handleCreateAdmin(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim() || !email.trim() || !password.trim()) return
+    const cleanName = name.trim()
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanName || !cleanEmail || !password.trim()) return
+
+    if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setError('Password must be at least 8 characters long and contain both letters and numbers.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {

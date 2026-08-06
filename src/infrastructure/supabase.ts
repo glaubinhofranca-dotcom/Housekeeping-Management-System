@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Room, Staff, UserRole } from '@/domain/types'
 
-const SUPABASE_URL = 'https://vlqjlxiaikifcoibozof.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_HD-MxNGXGRzX9uMiSARvIA_C21DWYU7'
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL || 'https://vlqjlxiaikifcoibozof.supabase.co'
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_HD-MxNGXGRzX9uMiSARvIA_C21DWYU7'
 
 // anon key is safe to expose in client-side code (protected by RLS)
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
