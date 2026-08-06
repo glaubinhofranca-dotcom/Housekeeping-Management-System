@@ -46,61 +46,85 @@ ALTER TABLE public.rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.room_history ENABLE ROW LEVEL SECURITY;
 
 -- --------------------------------------------------------
--- POLÍTICAS DE SEGURANÇA DA TABELA PROFILES
+-- FUNÇÕES DE CHECAGEM DE FUNÇÃO (SECURITY DEFINER - EVITA RECURSÃO)
+-- --------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_admin_or_supervisor()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role IN ('admin', 'supervisor')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- --------------------------------------------------------
+-- POLÍTICAS DE SEGURANÇA DA TABELA PROFILES (SEM RECURSÃO)
 -- --------------------------------------------------------
 DROP POLICY IF EXISTS "Usuários autenticados podem ver perfis" ON public.profiles;
-CREATE POLICY "Usuários autenticados podem ver perfis"
+DROP POLICY IF EXISTS "Usuários podem atualizar o próprio nome" ON public.profiles;
+DROP POLICY IF EXISTS "Admins possuem controle total de perfis" ON public.profiles;
+DROP POLICY IF EXISTS "Allow all ops on profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Leitura de perfis para autenticados" ON public.profiles;
+DROP POLICY IF EXISTS "Inserção de perfis" ON public.profiles;
+DROP POLICY IF EXISTS "Atualização de perfis" ON public.profiles;
+DROP POLICY IF EXISTS "Exclusão de perfis por admin" ON public.profiles;
+
+CREATE POLICY "Leitura de perfis para autenticados"
   ON public.profiles FOR SELECT
   TO authenticated
   USING (true);
 
-DROP POLICY IF EXISTS "Usuários podem atualizar o próprio nome" ON public.profiles;
-CREATE POLICY "Usuários podem atualizar o próprio nome"
+CREATE POLICY "Inserção de perfis"
+  ON public.profiles FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = id OR public.is_admin());
+
+CREATE POLICY "Atualização de perfis"
   ON public.profiles FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id)
-  WITH CHECK (
-    -- Impede que o usuário mude o próprio papel (role)
-    role = (SELECT role FROM public.profiles WHERE id = auth.uid())
-  );
+  USING (auth.uid() = id OR public.is_admin());
 
-DROP POLICY IF EXISTS "Admins possuem controle total de perfis" ON public.profiles;
-CREATE POLICY "Admins possuem controle total de perfis"
-  ON public.profiles FOR ALL
+CREATE POLICY "Exclusão de perfis por admin"
+  ON public.profiles FOR DELETE
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (public.is_admin());
 
 -- --------------------------------------------------------
 -- POLÍTICAS DE SEGURANÇA DA TABELA ROOMS
 -- --------------------------------------------------------
 DROP POLICY IF EXISTS "Usuários autenticados podem ler quartos" ON public.rooms;
-CREATE POLICY "Usuários autenticados podem ler quartos"
+DROP POLICY IF EXISTS "Camareiras podem atualizar status dos quartos" ON public.rooms;
+DROP POLICY IF EXISTS "Apenas admins/supervisores podem deletar/criar quartos" ON public.rooms;
+DROP POLICY IF EXISTS "Allow all ops on rooms" ON public.rooms;
+DROP POLICY IF EXISTS "Leitura de quartos para autenticados" ON public.rooms;
+DROP POLICY IF EXISTS "Atualização de quartos para autenticados" ON public.rooms;
+DROP POLICY IF EXISTS "Escrita e exclusão de quartos por admin/supervisor" ON public.rooms;
+
+CREATE POLICY "Leitura de quartos para autenticados"
   ON public.rooms FOR SELECT
   TO authenticated
   USING (true);
 
-DROP POLICY IF EXISTS "Camareiras podem atualizar status dos quartos" ON public.rooms;
-CREATE POLICY "Camareiras podem atualizar status dos quartos"
+CREATE POLICY "Atualização de quartos para autenticados"
   ON public.rooms FOR UPDATE
   TO authenticated
-  USING (true)
-  WITH CHECK (true);
+  USING (true);
 
-DROP POLICY IF EXISTS "Apenas admins/supervisores podem deletar/criar quartos" ON public.rooms;
-CREATE POLICY "Apenas admins/supervisores podem deletar/criar quartos"
+CREATE POLICY "Escrita e exclusão de quartos por admin/supervisor"
   ON public.rooms FOR ALL
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND role IN ('admin', 'supervisor')
-    )
-  );
+  USING (public.is_admin_or_supervisor());
 
 -- --------------------------------------------------------
 -- POLÍTICAS DE SEGURANÇA DA TABELA ROOM_HISTORY
